@@ -1,0 +1,12 @@
+key	organism	common_ru	group	gene_symbol	accession	cds_length
+Homo_sapiens	Homo sapiens	человек разумный	query	CNGA3	NM_001298.3	2085
+Pan_troglodytes	Pan troglodytes	шимпанзе обыкновенный	mammal	CNGA3	XM_054678681.2	2031
+Lepus_europaeus	Lepus europaeus	заяц-русак	mammal	CNGA3	XM_062208882.1	2085
+Loxodonta_africana	Loxodonta africana	африканский слон	mammal	CNGA3	XM_023552513.2	2076
+Aythya_fuligula	Aythya fuligula	хохлатая чернеть	bird	CNGA3	XM_032200842.1	2196
+Nothoprocta_perdicaria	Nothoprocta perdicaria	чилийский тинаму	bird	CNGA3	XM_026035640.1	1905
+Podarcis_erhardii	Podarcis erhardii	эгейская стенная ящерица	reptile	CNGA3	XM_081858976.1	2202
+Chelonia_mydas	Chelonia mydas	зелёная черепаха	reptile	CNGA3	XM_037898670.2	2025
+Ambystoma_mexicanum	Ambystoma mexicanum	мексиканская амбистома / аксолотль	amphibian	CNGA3	XM_069636583.1	2199
+Megalops_cyprinoides	Megalops cyprinoides	индо-тихоокеанский тарпон	ray-finned fish	cnga3a	XM_036545736.1	2247
+Callorhinchus_milii	Callorhinchus milii	австралийская химера	cartilaginous fish	cnga3a	XM_007891119.2	2043
