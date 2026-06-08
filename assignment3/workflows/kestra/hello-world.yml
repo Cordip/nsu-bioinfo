@@ -1,0 +1,9 @@
+id: hello_world_assignment3
+namespace: nsu.infobio.assignment3
+
+description: Minimal Kestra Hello world flow for assignment 3.
+
+tasks:
+  - id: hello
+    type: io.kestra.plugin.core.debug.Return
+    format: "Hello world from assignment3"

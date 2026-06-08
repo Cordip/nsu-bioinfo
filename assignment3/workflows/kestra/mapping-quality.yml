@@ -1,0 +1,255 @@
+id: mapping_quality_ont
+namespace: nsu.infobio.assignment3
+
+description: ONT mapping quality pipeline using SRA Toolkit, FastQC, minimap2 and samtools.
+
+inputs:
+  - id: project_dir
+    type: STRING
+    defaults: /workspace/infobio/assignment3
+    description: Absolute path to the assignment3 directory mounted inside the Kestra worker.
+
+  - id: sra_accession
+    type: STRING
+    defaults: SRR25637830
+    description: NCBI SRA run accession with ONT WGS reads.
+
+  - id: reference_fasta
+    type: STRING
+    defaults: data/reference/GCF_000005845.2_ASM584v2_genomic.fna
+    description: Reference FASTA path relative to project_dir.
+
+  - id: sample_name
+    type: STRING
+    defaults: SRR25637830_kestra
+    description: Prefix for result files.
+
+  - id: threads
+    type: INT
+    defaults: 4
+    description: Number of minimap2 threads.
+
+  - id: call_variants
+    type: BOOLEAN
+    defaults: false
+    description: Run samtools sort/index and FreeBayes after OK mapping.
+
+tasks:
+  - id: prepare_dirs
+    type: io.kestra.plugin.scripts.shell.Commands
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    commands:
+      - |
+        mkdir -p \
+          "{{ inputs.project_dir }}/data/sra" \
+          "{{ inputs.project_dir }}/data/reads" \
+          "{{ inputs.project_dir }}/results/{{ inputs.sample_name }}"
+
+  - id: download_sra
+    type: io.kestra.plugin.scripts.shell.Commands
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    commands:
+      - |
+        cd "{{ inputs.project_dir }}"
+        export PATH="{{ inputs.project_dir }}/.pixi/envs/default/bin:$PATH"
+        sra_file="data/sra/{{ inputs.sra_accession }}/{{ inputs.sra_accession }}.sra"
+        if [ ! -f "$sra_file" ]; then
+          prefetch "{{ inputs.sra_accession }}" -O data/sra
+        fi
+
+  - id: fastq_dump
+    type: io.kestra.plugin.scripts.shell.Commands
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    commands:
+      - |
+        cd "{{ inputs.project_dir }}"
+        export PATH="{{ inputs.project_dir }}/.pixi/envs/default/bin:$PATH"
+        sra_file="data/sra/{{ inputs.sra_accession }}/{{ inputs.sra_accession }}.sra"
+        reads_fastq="data/reads/{{ inputs.sra_accession }}.fastq.gz"
+        if [ ! -f "$reads_fastq" ]; then
+          fasterq-dump \
+            "$sra_file" \
+            --split-spot \
+            --outdir data/reads \
+            --temp "${TMPDIR:-/tmp}"
+        fi
+
+  - id: compress_fastq
+    type: io.kestra.plugin.scripts.shell.Commands
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    commands:
+      - |
+        cd "{{ inputs.project_dir }}"
+        export PATH="{{ inputs.project_dir }}/.pixi/envs/default/bin:$PATH"
+        raw_fastq="data/reads/{{ inputs.sra_accession }}.fastq"
+        reads_fastq="data/reads/{{ inputs.sra_accession }}.fastq.gz"
+        if [ -f "$raw_fastq" ] && [ ! -f "$reads_fastq" ]; then
+          gzip -f "$raw_fastq"
+        fi
+
+  - id: fastqc
+    type: io.kestra.plugin.scripts.shell.Commands
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    commands:
+      - |
+        cd "{{ inputs.project_dir }}"
+        export PATH="{{ inputs.project_dir }}/.pixi/envs/default/bin:$PATH"
+        fastqc \
+          --outdir "results/{{ inputs.sample_name }}" \
+          "data/reads/{{ inputs.sra_accession }}.fastq.gz"
+
+  - id: index_reference
+    type: io.kestra.plugin.scripts.shell.Commands
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    commands:
+      - |
+        cd "{{ inputs.project_dir }}"
+        export PATH="{{ inputs.project_dir }}/.pixi/envs/default/bin:$PATH"
+        minimap2 \
+          -x map-ont \
+          -d "results/{{ inputs.sample_name }}/reference.mmi" \
+          "{{ inputs.reference_fasta }}"
+
+  - id: map_reads
+    type: io.kestra.plugin.scripts.shell.Commands
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    commands:
+      - |
+        cd "{{ inputs.project_dir }}"
+        export PATH="{{ inputs.project_dir }}/.pixi/envs/default/bin:$PATH"
+        minimap2 \
+          -t "{{ inputs.threads }}" \
+          -ax map-ont \
+          "results/{{ inputs.sample_name }}/reference.mmi" \
+          "data/reads/{{ inputs.sra_accession }}.fastq.gz" \
+          > "results/{{ inputs.sample_name }}/{{ inputs.sample_name }}.sam"
+
+  - id: sam_to_bam
+    type: io.kestra.plugin.scripts.shell.Commands
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    commands:
+      - |
+        cd "{{ inputs.project_dir }}"
+        export PATH="{{ inputs.project_dir }}/.pixi/envs/default/bin:$PATH"
+        samtools view \
+          -bS \
+          "results/{{ inputs.sample_name }}/{{ inputs.sample_name }}.sam" \
+          -o "results/{{ inputs.sample_name }}/{{ inputs.sample_name }}.bam"
+
+  - id: flagstat
+    type: io.kestra.plugin.scripts.shell.Commands
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    commands:
+      - |
+        cd "{{ inputs.project_dir }}"
+        export PATH="{{ inputs.project_dir }}/.pixi/envs/default/bin:$PATH"
+        samtools flagstat \
+          "results/{{ inputs.sample_name }}/{{ inputs.sample_name }}.bam" \
+          > "results/{{ inputs.sample_name }}/{{ inputs.sample_name }}.flagstat.txt"
+
+  - id: evaluate_mapping
+    type: io.kestra.plugin.scripts.shell.Commands
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    commands:
+      - |
+        cd "{{ inputs.project_dir }}"
+        export PATH="{{ inputs.project_dir }}/.pixi/envs/default/bin:$PATH"
+        flagstat_txt="results/{{ inputs.sample_name }}/{{ inputs.sample_name }}.flagstat.txt"
+        percent="$(python scripts/parse_flagstat.py "$flagstat_txt")"
+        status="$(bash scripts/evaluate_mapping.sh "$flagstat_txt")"
+        echo "$status" > "results/{{ inputs.sample_name }}/{{ inputs.sample_name }}.mapping_status.txt"
+        echo "::{\"outputs\":{\"mapped_percent\":\"${percent}\",\"mapping_status\":\"${status}\"}}::"
+
+  - id: branch_by_mapping_quality
+    type: io.kestra.plugin.core.flow.If
+    condition: '{{ outputs.evaluate_mapping.vars.mapping_status == "OK!" }}'
+    then:
+      - id: write_ok
+        type: io.kestra.plugin.scripts.shell.Commands
+        taskRunner:
+          type: io.kestra.plugin.core.runner.Process
+        commands:
+          - |
+            cd "{{ inputs.project_dir }}"
+            echo "OK!" > "results/{{ inputs.sample_name }}/{{ inputs.sample_name }}.ok.txt"
+
+      - id: maybe_call_variants
+        type: io.kestra.plugin.core.flow.If
+        condition: '{{ inputs.call_variants == true }}'
+        then:
+          - id: index_reference_fasta
+            type: io.kestra.plugin.scripts.shell.Commands
+            taskRunner:
+              type: io.kestra.plugin.core.runner.Process
+            commands:
+              - |
+                cd "{{ inputs.project_dir }}"
+                export PATH="{{ inputs.project_dir }}/.pixi/envs/default/bin:$PATH"
+                if [ ! -f "{{ inputs.reference_fasta }}.fai" ]; then
+                  samtools faidx "{{ inputs.reference_fasta }}"
+                fi
+
+          - id: sort_bam
+            type: io.kestra.plugin.scripts.shell.Commands
+            taskRunner:
+              type: io.kestra.plugin.core.runner.Process
+            commands:
+              - |
+                cd "{{ inputs.project_dir }}"
+                export PATH="{{ inputs.project_dir }}/.pixi/envs/default/bin:$PATH"
+                samtools sort \
+                  -o "results/{{ inputs.sample_name }}/{{ inputs.sample_name }}.sorted.bam" \
+                  "results/{{ inputs.sample_name }}/{{ inputs.sample_name }}.bam"
+
+          - id: index_bam
+            type: io.kestra.plugin.scripts.shell.Commands
+            taskRunner:
+              type: io.kestra.plugin.core.runner.Process
+            commands:
+              - |
+                cd "{{ inputs.project_dir }}"
+                export PATH="{{ inputs.project_dir }}/.pixi/envs/default/bin:$PATH"
+                samtools index \
+                  "results/{{ inputs.sample_name }}/{{ inputs.sample_name }}.sorted.bam"
+
+          - id: call_variants
+            type: io.kestra.plugin.scripts.shell.Commands
+            taskRunner:
+              type: io.kestra.plugin.core.runner.Process
+            commands:
+              - |
+                cd "{{ inputs.project_dir }}"
+                export PATH="{{ inputs.project_dir }}/.pixi/envs/default/bin:$PATH"
+                freebayes \
+                  -f "{{ inputs.reference_fasta }}" \
+                  "results/{{ inputs.sample_name }}/{{ inputs.sample_name }}.sorted.bam" \
+                  > "results/{{ inputs.sample_name }}/{{ inputs.sample_name }}.vcf"
+
+      - id: write_finished
+        type: io.kestra.plugin.scripts.shell.Commands
+        taskRunner:
+          type: io.kestra.plugin.core.runner.Process
+        commands:
+          - |
+            cd "{{ inputs.project_dir }}"
+            echo "Finished" > "results/{{ inputs.sample_name }}/{{ inputs.sample_name }}.finished.txt"
+    else:
+      - id: write_not_ok
+        type: io.kestra.plugin.scripts.shell.Commands
+        taskRunner:
+          type: io.kestra.plugin.core.runner.Process
+        commands:
+          - |
+            cd "{{ inputs.project_dir }}"
+            echo "not OK..." > "results/{{ inputs.sample_name }}/{{ inputs.sample_name }}.not_ok.txt"
+            echo "Finished" > "results/{{ inputs.sample_name }}/{{ inputs.sample_name }}.finished.txt"

@@ -1,0 +1,91 @@
+Kestra execution log
+execution_id: 2mVaKnb1TUn8eazPHuAHs3
+flow: nsu.infobio.assignment3.mapping_quality_ont
+columns: timestamp<TAB>level<TAB>task_id<TAB>message
+
+2026-06-08T08:52:36.190305Z	DEBUG	prepare_dirs	Using task runner 'io.kestra.plugin.core.runner.Process'
+2026-06-08T08:52:36.194764Z	DEBUG	prepare_dirs	Starting command with pid 814 [/bin/sh -c set -e mkdir -p \\   "/workspace/infobio/assignment3/data/sra" \\   "/workspace/infobio/assignment3/data/reads" \\   "/workspace/infobio/assignment3/results/SRR25637830_kestra" ]
+2026-06-08T08:52:36.197113Z	DEBUG	prepare_dirs	Command succeed with exit code 0
+2026-06-08T08:52:36.197432Z	TRACE	prepare_dirs	Captured 0 output file(s).
+2026-06-08T08:52:36.320415Z	DEBUG	download_sra	Using task runner 'io.kestra.plugin.core.runner.Process'
+2026-06-08T08:52:36.324692Z	DEBUG	download_sra	Starting command with pid 826 [/bin/sh -c set -e cd "/workspace/infobio/assignment3" export PATH="/workspace/infobio/assignment3/.pixi/envs/default/bin:$PATH" sra_file="data/sra/SRR25637830/SRR25637830.sra" if [ ! -f "$sra_file" ]; then   prefetch "SRR25637830" -O data/sra fi ]
+2026-06-08T08:52:36.325999Z	DEBUG	download_sra	Command succeed with exit code 0
+2026-06-08T08:52:36.326245Z	TRACE	download_sra	Captured 0 output file(s).
+2026-06-08T08:52:36.348684Z	DEBUG	fastq_dump	Using task runner 'io.kestra.plugin.core.runner.Process'
+2026-06-08T08:52:36.359089Z	DEBUG	fastq_dump	Starting command with pid 837 [/bin/sh -c set -e cd "/workspace/infobio/assignment3" export PATH="/workspace/infobio/assignment3/.pixi/envs/default/bin:$PATH" sra_file="data/sra/SRR25637830/SRR25637830.sra" reads_fastq="data/reads/SRR25637830.fastq.gz" if [ ! -f "$reads_fastq" ]; then   fasterq-dump \\     "$sra_file" \\     --split-spot \\     --outdir data/reads \\     --temp "${TMPDIR:-/tmp}" fi ]
+2026-06-08T08:52:36.359687Z	DEBUG	fastq_dump	Command succeed with exit code 0
+2026-06-08T08:52:36.359960Z	TRACE	fastq_dump	Captured 0 output file(s).
+2026-06-08T08:52:36.401888Z	DEBUG	compress_fastq	Using task runner 'io.kestra.plugin.core.runner.Process'
+2026-06-08T08:52:36.407163Z	DEBUG	compress_fastq	Starting command with pid 848 [/bin/sh -c set -e cd "/workspace/infobio/assignment3" export PATH="/workspace/infobio/assignment3/.pixi/envs/default/bin:$PATH" raw_fastq="data/reads/SRR25637830.fastq" reads_fastq="data/reads/SRR25637830.fastq.gz" if [ -f "$raw_fastq" ] && [ ! -f "$reads_fastq" ]; then   gzip -f "$raw_fastq" fi ]
+2026-06-08T08:52:36.408742Z	DEBUG	compress_fastq	Command succeed with exit code 0
+2026-06-08T08:52:36.409327Z	TRACE	compress_fastq	Captured 0 output file(s).
+2026-06-08T08:52:36.480909Z	DEBUG	fastqc	Using task runner 'io.kestra.plugin.core.runner.Process'
+2026-06-08T08:52:36.485411Z	DEBUG	fastqc	Starting command with pid 859 [/bin/sh -c set -e cd "/workspace/infobio/assignment3" export PATH="/workspace/infobio/assignment3/.pixi/envs/default/bin:$PATH" fastqc \\   --outdir "results/SRR25637830_kestra" \\   "data/reads/SRR25637830.fastq.gz" ]
+2026-06-08T08:52:36.613925Z	INFO	fastqc	application/gzip
+2026-06-08T08:52:36.641575Z	ERROR	fastqc	Started analysis of SRR25637830.fastq.gz
+2026-06-08T08:52:37.568577Z	ERROR	fastqc	Approx 5% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:38.217743Z	ERROR	fastqc	Approx 10% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:39.059042Z	ERROR	fastqc	Approx 15% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:39.830241Z	ERROR	fastqc	Approx 20% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:40.416682Z	ERROR	fastqc	Approx 25% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:40.944211Z	ERROR	fastqc	Approx 30% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:41.823869Z	ERROR	fastqc	Approx 35% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:42.358144Z	ERROR	fastqc	Approx 40% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:42.950110Z	ERROR	fastqc	Approx 45% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:43.541012Z	ERROR	fastqc	Approx 50% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:44.067800Z	ERROR	fastqc	Approx 55% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:44.858912Z	ERROR	fastqc	Approx 60% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:45.485410Z	ERROR	fastqc	Approx 65% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:46.078731Z	ERROR	fastqc	Approx 70% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:46.680908Z	ERROR	fastqc	Approx 75% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:47.328152Z	ERROR	fastqc	Approx 80% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:47.927973Z	ERROR	fastqc	Approx 85% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:48.491921Z	ERROR	fastqc	Approx 90% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:49.069320Z	ERROR	fastqc	Approx 95% complete for SRR25637830.fastq.gz
+2026-06-08T08:52:49.641470Z	INFO	fastqc	Analysis complete for SRR25637830.fastq.gz
+2026-06-08T08:52:51.677440Z	TRACE	fastqc	Captured 0 output file(s).
+2026-06-08T08:52:51.677200Z	DEBUG	fastqc	Command succeed with exit code 0
+2026-06-08T08:52:51.897110Z	DEBUG	index_reference	Using task runner 'io.kestra.plugin.core.runner.Process'
+2026-06-08T08:52:51.901036Z	DEBUG	index_reference	Starting command with pid 900 [/bin/sh -c set -e cd "/workspace/infobio/assignment3" export PATH="/workspace/infobio/assignment3/.pixi/envs/default/bin:$PATH" minimap2 \\   -x map-ont \\   -d "results/SRR25637830_kestra/reference.mmi" \\   "data/reference/GCF_000005845.2_ASM584v2_genomic.fna" ]
+2026-06-08T08:52:52.019721Z	ERROR	index_reference	[M::mm_idx_gen::0.116*1.02] collected minimizers
+2026-06-08T08:52:52.043520Z	ERROR	index_reference	[M::mm_idx_gen::0.140*1.33] sorted minimizers
+2026-06-08T08:52:52.078395Z	ERROR	index_reference	[M::main::0.175*1.27] loaded/built the index for 1 target sequence(s)
+2026-06-08T08:52:52.078621Z	ERROR	index_reference	[M::mm_idx_stat] kmer size: 15; skip: 10; is_hpc: 0; #seq: 1
+2026-06-08T08:52:52.088211Z	ERROR	index_reference	[M::mm_idx_stat::0.184*1.25] distinct minimizers: 838542 (98.18% are singletons); average occurrences: 1.034; average spacing: 5.352; total length: 4641652
+2026-06-08T08:52:52.122366Z	ERROR	index_reference	[M::main] Version: 2.31-r1302
+2026-06-08T08:52:52.122568Z	ERROR	index_reference	[M::main] Real time: 0.219 sec; CPU: 0.239 sec; Peak RSS: 0.048 GB
+2026-06-08T08:52:52.122520Z	ERROR	index_reference	[M::main] CMD: minimap2 -x map-ont -d results/SRR25637830_kestra/reference.mmi data/reference/GCF_000005845.2_ASM584v2_genomic.fna
+2026-06-08T08:52:52.127500Z	TRACE	index_reference	Captured 0 output file(s).
+2026-06-08T08:52:52.127371Z	DEBUG	index_reference	Command succeed with exit code 0
+2026-06-08T08:52:52.181185Z	DEBUG	map_reads	Using task runner 'io.kestra.plugin.core.runner.Process'
+2026-06-08T08:52:52.185800Z	DEBUG	map_reads	Starting command with pid 912 [/bin/sh -c set -e cd "/workspace/infobio/assignment3" export PATH="/workspace/infobio/assignment3/.pixi/envs/default/bin:$PATH" minimap2 \\   -t "4" \\   -ax map-ont \\   "results/SRR25637830_kestra/reference.mmi" \\   "data/reads/SRR25637830.fastq.gz" \\   > "results/SRR25637830_kestra/SRR25637830_kestra.sam" ]
+2026-06-08T08:52:52.373269Z	ERROR	map_reads	[M::main::0.041*1.03] loaded/built the index for 1 target sequence(s)
+2026-06-08T08:52:52.386070Z	ERROR	map_reads	[M::mm_mapopt_update::0.054*1.03] mid_occ = 12
+2026-06-08T08:52:52.386235Z	ERROR	map_reads	[M::mm_idx_stat] kmer size: 15; skip: 10; is_hpc: 0; #seq: 1
+2026-06-08T08:52:52.394827Z	ERROR	map_reads	[M::mm_idx_stat::0.062*1.02] distinct minimizers: 838542 (98.18% are singletons); average occurrences: 1.034; average spacing: 5.352; total length: 4641652
+2026-06-08T08:53:14.491516Z	ERROR	map_reads	[M::worker_pipeline::22.159*3.57] mapped 46221 sequences
+2026-06-08T08:53:14.498878Z	ERROR	map_reads	[M::main] CMD: minimap2 -t 4 -ax map-ont results/SRR25637830_kestra/reference.mmi data/reads/SRR25637830.fastq.gz
+2026-06-08T08:53:14.498917Z	ERROR	map_reads	[M::main] Real time: 22.166 sec; CPU: 79.214 sec; Peak RSS: 1.542 GB
+2026-06-08T08:53:14.498681Z	ERROR	map_reads	[M::main] Version: 2.31-r1302
+2026-06-08T08:53:15.405675Z	TRACE	map_reads	Captured 0 output file(s).
+2026-06-08T08:53:15.405508Z	DEBUG	map_reads	Command succeed with exit code 0
+2026-06-08T08:53:15.615721Z	DEBUG	sam_to_bam	Using task runner 'io.kestra.plugin.core.runner.Process'
+2026-06-08T08:53:15.619633Z	DEBUG	sam_to_bam	Starting command with pid 923 [/bin/sh -c set -e cd "/workspace/infobio/assignment3" export PATH="/workspace/infobio/assignment3/.pixi/envs/default/bin:$PATH" samtools view \\   -bS \\   "results/SRR25637830_kestra/SRR25637830_kestra.sam" \\   -o "results/SRR25637830_kestra/SRR25637830_kestra.bam" ]
+2026-06-08T08:53:21.405353Z	TRACE	sam_to_bam	Captured 0 output file(s).
+2026-06-08T08:53:21.405188Z	DEBUG	sam_to_bam	Command succeed with exit code 0
+2026-06-08T08:53:21.473938Z	DEBUG	flagstat	Using task runner 'io.kestra.plugin.core.runner.Process'
+2026-06-08T08:53:21.478886Z	DEBUG	flagstat	Starting command with pid 928 [/bin/sh -c set -e cd "/workspace/infobio/assignment3" export PATH="/workspace/infobio/assignment3/.pixi/envs/default/bin:$PATH" samtools flagstat \\   "results/SRR25637830_kestra/SRR25637830_kestra.bam" \\   > "results/SRR25637830_kestra/SRR25637830_kestra.flagstat.txt" ]
+2026-06-08T08:53:22.301083Z	DEBUG	flagstat	Command succeed with exit code 0
+2026-06-08T08:53:22.301222Z	TRACE	flagstat	Captured 0 output file(s).
+2026-06-08T08:53:22.344370Z	DEBUG	evaluate_mapping	Using task runner 'io.kestra.plugin.core.runner.Process'
+2026-06-08T08:53:22.348472Z	DEBUG	evaluate_mapping	Starting command with pid 931 [/bin/sh -c set -e cd "/workspace/infobio/assignment3" export PATH="/workspace/infobio/assignment3/.pixi/envs/default/bin:$PATH" flagstat_txt="results/SRR25637830_kestra/SRR25637830_kestra.flagstat.txt" percent="$(python scripts/parse_flagstat.py "$flagstat_txt")" status="$(bash scripts/evaluate_mapping.sh "$flagstat_txt")" echo "$status" > "results/SRR25637830_kestra/SRR25637830_kestra.mapping_status.txt" echo "::{\\"outputs\\":{\\"mapped_percent\\":\\"${percent}\\",\\"mapping_status\\":\\"${status}\\"}}::" ]
+2026-06-08T08:53:22.407498Z	TRACE	evaluate_mapping	Captured 0 output file(s).
+2026-06-08T08:53:22.407335Z	DEBUG	evaluate_mapping	Command succeed with exit code 0
+2026-06-08T08:53:22.474323Z	DEBUG	write_ok	Using task runner 'io.kestra.plugin.core.runner.Process'
+2026-06-08T08:53:22.478665Z	DEBUG	write_ok	Starting command with pid 939 [/bin/sh -c set -e cd "/workspace/infobio/assignment3" echo "OK!" > "results/SRR25637830_kestra/SRR25637830_kestra.ok.txt" ]
+2026-06-08T08:53:22.480685Z	TRACE	write_ok	Captured 0 output file(s).
+2026-06-08T08:53:22.480525Z	DEBUG	write_ok	Command succeed with exit code 0
+2026-06-08T08:53:22.579310Z	DEBUG	write_finished	Using task runner 'io.kestra.plugin.core.runner.Process'
+2026-06-08T08:53:22.584389Z	DEBUG	write_finished	Starting command with pid 943 [/bin/sh -c set -e cd "/workspace/infobio/assignment3" echo "Finished" > "results/SRR25637830_kestra/SRR25637830_kestra.finished.txt" ]
+2026-06-08T08:53:22.586805Z	DEBUG	write_finished	Command succeed with exit code 0
+2026-06-08T08:53:22.587018Z	TRACE	write_finished	Captured 0 output file(s).
